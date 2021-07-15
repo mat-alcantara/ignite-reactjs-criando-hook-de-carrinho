@@ -35,20 +35,33 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const addProduct = async (productId: number) => {
     try {
       const product = await api.get<Product>(`/products/${productId}`);
-      const stock = await api.get<Stock>(`/stock/${productId}`);
 
-      // Check if product already exist in cart
-      const productIndexInCartIfExist = cart.findIndex(
+      const stock = await api.get<Stock>(`/stock/${productId}`);
+      const stockAmount = stock.data.amount;
+
+      // Find product index in cart
+      const productIndex = cart.findIndex(
         (cartItem) => cartItem.id === productId
       );
 
-      if (productIndexInCartIfExist !== -1) {
-        const amountUpdated = (cart[productIndexInCartIfExist].amount += 1);
+      // True if product exist in cart, false it does not exist
+      const isProductOnCart = productIndex !== -1;
 
-        if (stock.data.amount < amountUpdated) {
-          toast.error("Quantidade solicitada fora de estoque");
-        }
+      // Check if product is out of stock
+      const currentProductAmount = isProductOnCart
+        ? cart[productIndex].amount
+        : 0;
 
+      const amountUpdated = currentProductAmount + 1; // addProduct always increment +1 if item already exist in cart
+
+      if (amountUpdated > stockAmount) {
+        toast.error("Quantidade solicitada fora de estoque");
+
+        return;
+      }
+
+      // Update product if it exist in cart
+      if (isProductOnCart) {
         updateProductAmount({
           productId,
           amount: amountUpdated,
@@ -57,7 +70,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         return;
       }
 
-      // Add a new product to cart
+      // Add a new product to cart if it does not exist
       const cartUpdated = [...cart, { ...product.data, amount: 1 }];
 
       setCart(cartUpdated);
@@ -99,14 +112,13 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     try {
       const productStock = await api.get<Stock>(`/stock/${productId}`);
 
-      if (productStock.data.amount < amount) {
-        toast.error("Quantidade solicitada fora de estoque");
-
+      if (amount < 1) {
         return;
       }
 
-      // Sai da função imediatamente se o novo valor for menor do que 1
-      if (amount < 1) {
+      if (productStock.data.amount < amount) {
+        toast.error("Quantidade solicitada fora de estoque");
+
         return;
       }
 

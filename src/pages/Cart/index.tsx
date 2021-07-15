@@ -28,15 +28,17 @@ const Cart = (): JSX.Element => {
   //   price: formatPrice(product.price),
   // }));
 
-  // const total =
-  //   formatPrice(
-  //     cart.reduce((sumTotal, product) => {
-  //       // TODO
-  //     }, 0)
-  //   )
+  const total = formatPrice(
+    cart.reduce((sumTotal, product) => {
+      return (sumTotal += product.price);
+    }, 0)
+  );
 
   function handleProductIncrement(product: Product) {
-    updateProductAmount({ productId: product.id, amount: 1 });
+    updateProductAmount({
+      productId: product.id,
+      amount: (product.amount += 1),
+    });
   }
 
   function handleProductDecrement(product: Product) {
@@ -44,7 +46,10 @@ const Cart = (): JSX.Element => {
       return;
     }
 
-    updateProductAmount({ productId: product.id, amount: -1 });
+    updateProductAmount({
+      productId: product.id,
+      amount: (product.amount -= 1),
+    });
   }
 
   function handleRemoveProduct(productId: number) {
@@ -81,7 +86,7 @@ const Cart = (): JSX.Element => {
                   <button
                     type="button"
                     data-testid="decrement-product"
-                    // disabled={product.amount <= 1}
+                    disabled={cartItem.amount <= 1}
                     onClick={() => handleProductDecrement(cartItem)}
                   >
                     <MdRemoveCircleOutline size={20} />
@@ -90,7 +95,7 @@ const Cart = (): JSX.Element => {
                     type="text"
                     data-testid="product-amount"
                     readOnly
-                    value={2}
+                    value={cartItem.amount}
                   />
                   <button
                     type="button"
@@ -102,7 +107,7 @@ const Cart = (): JSX.Element => {
                 </div>
               </td>
               <td>
-                <strong>R$ 359,80</strong>
+                <strong>{formatPrice(cartItem.price * cartItem.amount)}</strong>
               </td>
               <td>
                 <button
@@ -123,7 +128,7 @@ const Cart = (): JSX.Element => {
 
         <Total>
           <span>TOTAL</span>
-          <strong>R$ 359,80</strong>
+          <strong>{total}</strong>
         </Total>
       </footer>
     </Container>

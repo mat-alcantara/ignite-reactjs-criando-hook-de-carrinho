@@ -44,7 +44,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         (cartItem) => cartItem.id === productId
       );
 
-      // True if product exist in cart, false it does not exist
+      // True if product exist on cart, false it does not exist
       const isProductOnCart = productIndex !== -1;
 
       // Check if product is out of stock
